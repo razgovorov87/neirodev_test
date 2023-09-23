@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
 import 'router.gr.dart';
@@ -12,6 +13,7 @@ class AppRouter extends $AppRouter {
   List<AutoRoute> get routes => <AutoRoute>[
         ..._authorizationRoutes,
         ..._mainFlowRoutes,
+        ..._dialogRoutes,
       ];
 }
 
@@ -46,5 +48,16 @@ final List<AdaptiveRoute> _mainFlowRoutes = <AdaptiveRoute>[
         page: AnalyticsRoute.page,
       ),
     ],
+  ),
+];
+
+final List<CustomRoute> _dialogRoutes = <CustomRoute>[
+  CustomRoute(
+    path: '/transaction_info',
+    page: TransactionInfoDialog.page,
+    opaque: false,
+    barrierColor: const Color(0x80000000),
+    transitionsBuilder: TransitionsBuilders.fadeIn,
+    durationInMilliseconds: 200,
   ),
 ];

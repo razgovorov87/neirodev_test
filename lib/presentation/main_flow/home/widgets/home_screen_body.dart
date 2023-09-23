@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
 
+import '../../../../domain/bloc/add_remove_transactions_bloc/add_remove_transactions_bloc.dart';
+import '../../../../domain/bloc/get_transactions_cubit/transactions_cubit.dart';
+import '../../../../domain/models/enum/transaction_type.dart';
+import '../../../../domain/models/transaction/transaction.dart';
 import '../../../../generated/assets.gen.dart';
+import '../../../extenstions/extentions.dart';
 
 class HomeScreenBody extends StatefulWidget {
   const HomeScreenBody({
@@ -16,13 +21,13 @@ class HomeScreenBody extends StatefulWidget {
 class _HomeScreenBodyState extends State<HomeScreenBody> {
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          Text(
+          const Text(
             'Главная',
             style: TextStyle(
               fontSize: 24,
@@ -30,11 +35,20 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 26),
-          _TotalAmount(),
-          SizedBox(height: 46),
-          _ActionRowWidget(),
-          SizedBox(height: 36),
+          const SizedBox(height: 26),
+          BlocBuilder<TransactionsCubit, TransactionsState>(
+            builder: (BuildContext context, TransactionsState state) {
+              final List<Transaction> list = state.transactions;
+              double total = 0;
+              for (final Transaction i in list) {
+                total += i.sum + i.fee;
+              }
+              return _TotalAmount(total: total);
+            },
+          ),
+          const SizedBox(height: 46),
+          const _ActionRowWidget(),
+          const SizedBox(height: 36),
         ],
       ),
     );
@@ -54,14 +68,31 @@ class _ActionRowWidget extends StatelessWidget {
       child: Row(
         children: <Widget>[
           _ActionItem(
-            onTap: () {},
+            onTap: () {
+              context.read<AddRemoveTransactionsBloc>().add(
+                    const AddRemoveTransactionsEvent.addTransaction(TransactionType.income),
+                  );
+            },
             icon: Assets.icons.addCircle.svg(),
             text: 'Пополнить',
           ),
           _ActionItem(
-            onTap: () {},
+            onTap: () {
+              context.read<AddRemoveTransactionsBloc>().add(
+                    const AddRemoveTransactionsEvent.addTransaction(TransactionType.expense),
+                  );
+            },
+            icon: Assets.icons.transferCircle.svg(),
+            text: 'Перевести',
+          ),
+          _ActionItem(
+            onTap: () {
+              context.read<AddRemoveTransactionsBloc>().add(
+                    const AddRemoveTransactionsEvent.addTransaction(TransactionType.withdraw),
+                  );
+            },
             icon: Assets.icons.minusCircle.svg(),
-            text: 'Потратить',
+            text: 'Снять',
           ),
         ],
       ),
@@ -109,7 +140,11 @@ class _ActionItem extends StatelessWidget {
 }
 
 class _TotalAmount extends StatelessWidget {
-  const _TotalAmount();
+  const _TotalAmount({
+    required this.total,
+  });
+
+  final double total;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +164,7 @@ class _TotalAmount extends StatelessWidget {
                 ),
               ),
               Text(
-                _getPrice(price: 1204564.36, decimalDigits: 2),
+                total.getPrice(),
                 style: const TextStyle(
                   fontSize: 24,
                   height: 28 / 24,
@@ -149,9 +184,5 @@ class _TotalAmount extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _getPrice({required double price, int decimalDigits = 0}) {
-    return NumberFormat.currency(locale: 'ru', symbol: '\u20BD', decimalDigits: decimalDigits).format(price);
   }
 }

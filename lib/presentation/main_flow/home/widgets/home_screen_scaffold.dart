@@ -24,8 +24,9 @@ class _HomeScreenScaffoldState extends State<HomeScreenScaffold> {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double paddingTop = MediaQuery.of(context).viewPadding.top;
-    final double panelHeight = screenHeight * 0.62;
-    final double bodyHeight = screenHeight - panelHeight;
+
+    final double bodyHeight = screenHeight * 0.4;
+    final double panelHeight = screenHeight - bodyHeight - 85;
 
     return Scaffold(
       backgroundColor: CustomColors.homeBg,
@@ -33,7 +34,7 @@ class _HomeScreenScaffoldState extends State<HomeScreenScaffold> {
       body: SlidingUpPanel(
         scrollController: widget.scrollController,
         minHeight: panelHeight,
-        maxHeight: screenHeight - paddingTop,
+        maxHeight: screenHeight - paddingTop - 85,
         boxShadow: const <BoxShadow>[],
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),

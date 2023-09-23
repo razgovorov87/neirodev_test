@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../injectable.dart';
-import '../router.dart';
+import '../router/router.dart';
 
 class Application extends StatefulWidget {
   const Application({super.key});
@@ -14,10 +14,8 @@ class _ApplicationState extends State<Application> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      supportedLocales: const <Locale>[
-        Locale('ru', 'RU'),
-      ],
       debugShowCheckedModeBanner: false,
+      locale: const Locale('ru'),
       theme: ThemeData(
         fontFamily: 'Rubik',
       ),

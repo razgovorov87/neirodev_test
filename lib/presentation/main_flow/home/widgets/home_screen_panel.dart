@@ -1,13 +1,14 @@
-import 'dart:math';
-
+import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
-enum TransactionType {
-  income,
-  expense,
-}
+import '../../../../domain/bloc/get_transactions_map_cubit/transactions_map_cubit.dart';
+import '../../../../domain/models/transaction/transaction.dart';
+import '../../../extenstions/extentions.dart';
+import '../../../router/router.gr.dart';
 
 class HomeScreenPanel extends StatefulWidget {
   const HomeScreenPanel({
@@ -27,8 +28,15 @@ class _HomeScreenPanelState extends State<HomeScreenPanel> {
     return Stack(
       children: <Widget>[
         Align(
-          child: _TransactionList(
-            scrollController: widget.scrollController,
+          child: BlocBuilder<TransactionsMapCubit, TransactionsMapState>(
+            builder: (BuildContext context, TransactionsMapState state) {
+              final Map<DateTime, List<Transaction>> map = state.transactions;
+
+              return _TransactionList(
+                map: map,
+                scrollController: widget.scrollController,
+              );
+            },
           ),
         ),
         Positioned(
@@ -53,10 +61,12 @@ class _HomeScreenPanelState extends State<HomeScreenPanel> {
 
 class _TransactionList extends StatelessWidget {
   const _TransactionList({
+    required this.map,
     required this.scrollController,
   });
 
   final ScrollController scrollController;
+  final Map<DateTime, List<Transaction>> map;
 
   @override
   Widget build(BuildContext context) {
@@ -80,134 +90,137 @@ class _TransactionList extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: 20,
+            itemCount: map.length,
             shrinkWrap: true,
             controller: scrollController,
-            itemBuilder: (BuildContext context, int index) => StickyHeader(
-              controller: scrollController,
-              header: Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(top: 6),
-                decoration: const BoxDecoration(color: Colors.white),
-                height: 32,
-                child: Text(
-                  _getDay(index),
-                  style: const TextStyle(
-                    fontSize: 17,
-                    height: 22 / 17,
-                    fontWeight: FontWeight.w600,
+            itemBuilder: (BuildContext context, int keyIndex) {
+              final MapEntry<DateTime, List<Transaction>> currentEntry = map.entries.elementAt(keyIndex);
+              final DateTime date = currentEntry.key;
+              final List<Transaction> transactions =
+                  currentEntry.value.sorted((Transaction a, Transaction b) => b.createdAt.compareTo(a.createdAt));
+
+              return StickyHeader(
+                controller: scrollController,
+                header: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.only(top: 6),
+                  decoration: const BoxDecoration(color: Colors.white),
+                  height: 32,
+                  child: Text(
+                    _getDate(date),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      height: 22 / 17,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              content: ListView.separated(
-                padding: EdgeInsets.zero,
-                itemCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (BuildContext context, int index) => _TransactionItem(
-                  type: Random().nextBool() ? TransactionType.income : TransactionType.expense,
+                content: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: transactions.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (BuildContext context, int index) => _TransactionItem(
+                    transaction: transactions[index],
+                  ),
+                  separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 6),
                 ),
-                separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 6),
-              ),
-            ),
+              );
+            },
           ),
         ),
+        const SizedBox(height: 12),
       ],
     );
   }
 
-  String _getDay(int index) {
-    if (index == 0) {
-      return 'Сегодня';
-    } else if (index == 1) {
-      return 'Вчера';
-    }
-    final DateTime date = DateTime.now().subtract(Duration(days: index));
-    return DateFormat.MMMd().format(date);
+  String _getDate(DateTime day) {
+    final DateFormat pattern = DateFormat.MMMMd();
+    return pattern.format(day);
   }
 }
 
 class _TransactionItem extends StatelessWidget {
   const _TransactionItem({
-    required this.type,
+    required this.transaction,
   });
-  final TransactionType type;
+  final Transaction transaction;
 
   @override
   Widget build(BuildContext context) {
-    final Color color = type == TransactionType.income ? const Color(0xFFA0EA74) : const Color(0xFFFF6767);
-    final String price = _getPrice(price: Random().nextDouble() * 1000, decimalDigits: 2);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withOpacity(0.15),
+    return InkWell(
+      onTap: () {
+        context.router.push(TransactionInfoDialog(transaction: transaction));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: transaction.type.getColor().withOpacity(0.15),
+              ),
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              height: 40,
+              width: 40,
+              child: transaction.type.getIcon(),
             ),
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-            height: 40,
-            width: 40,
-            child: Icon(
-              type == TransactionType.income ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-              color: color,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    transaction.type.getTitle(),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 20 / 15,
+                      letterSpacing: -0.24,
+                    ),
+                  ),
+                  const Text(
+                    'Переводы',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 16 / 13,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  type == TransactionType.income ? 'Со счета Тинькофф' : 'На счет Тинькофф',
+                  (transaction.sum + transaction.fee).getPrice(decimalDigits: 2),
                   style: const TextStyle(
                     fontSize: 15,
                     height: 20 / 15,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: -0.24,
                   ),
                 ),
-                const Text(
-                  'Перевод между счетами',
-                  style: TextStyle(
+                Text(
+                  _getCreatedAt(transaction.createdAt),
+                  style: const TextStyle(
                     fontSize: 13,
                     height: 16 / 13,
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                type == TransactionType.income ? price : '-$price',
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 20 / 15,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.24,
-                ),
-              ),
-              const Text(
-                '22.06',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 16 / 13,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  String _getPrice({required double price, int decimalDigits = 0}) {
-    return NumberFormat.currency(locale: 'ru', symbol: '\u20BD', decimalDigits: decimalDigits).format(price);
+  String _getCreatedAt(DateTime createdAt) {
+    final DateFormat pattern = DateFormat.Hm();
+    return pattern.format(createdAt);
   }
 }
