@@ -6,6 +6,7 @@ import 'package:nested/nested.dart';
 import '../../domain/bloc/add_remove_transactions_bloc/add_remove_transactions_bloc.dart';
 import '../../domain/bloc/get_transactions_cubit/transactions_cubit.dart';
 import '../../domain/bloc/get_transactions_map_cubit/transactions_map_cubit.dart';
+import '../../domain/repository/authorization_repository.dart';
 import '../../injectable.dart';
 import '../router/router.gr.dart';
 import 'home/widgets/bottom_navigation_bar/bottom_navigation_bar.dart';
@@ -22,7 +23,7 @@ class _MainFlowState extends State<MainFlow> {
   final TransactionsCubit _transactionCubit = getIt.get<TransactionsCubit>();
   final TransactionsMapCubit _transactionsMapCubit = getIt.get<TransactionsMapCubit>();
   final AddRemoveTransactionsBloc _addRemoveTransactionBloc = getIt.get<AddRemoveTransactionsBloc>();
-
+  final AuthorizationRepository test = getIt.get<AuthorizationRepository>();
   @override
   void dispose() {
     _transactionCubit.close();

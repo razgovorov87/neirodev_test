@@ -18,25 +18,15 @@ class AppRouter extends $AppRouter {
 }
 
 final List<AdaptiveRoute> _authorizationRoutes = <AdaptiveRoute>[
-  // AdaptiveRoute(
-  //   path: '/',
-  //   page: AuthorizationFlow.page,
-  //   children: <AutoRoute>[
-  //     AdaptiveRoute(
-  //       path: '',
-  //       page: AuthorizationRoute.page,
-  //     ),
-  //     AdaptiveRoute(
-  //       path: 'register',
-  //       page: RegisterRoute.page,
-  //     ),
-  //   ],
-  // ),
+  AdaptiveRoute(
+    path: '/',
+    page: AuthorizationRoute.page,
+  ),
 ];
 
 final List<AdaptiveRoute> _mainFlowRoutes = <AdaptiveRoute>[
   AdaptiveRoute(
-    path: '/',
+    path: '/main',
     page: MainFlow.page,
     children: <AutoRoute>[
       AdaptiveRoute(

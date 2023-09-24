@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../domain/bloc/add_remove_transactions_bloc/add_remove_transactions_bloc.dart';
+import '../../../../domain/bloc/authorization/bloc/authorization_bloc.dart';
 import '../../../../domain/bloc/get_transactions_cubit/transactions_cubit.dart';
 import '../../../../domain/models/enum/transaction_type.dart';
 import '../../../../domain/models/transaction/transaction.dart';
@@ -27,13 +28,27 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          const Text(
-            'Главная',
-            style: TextStyle(
-              fontSize: 24,
-              height: 28 / 24,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: <Widget>[
+              const Expanded(
+                child: Text(
+                  'Главная',
+                  style: TextStyle(
+                    fontSize: 24,
+                    height: 28 / 24,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  context.read<AuthorizationBloc>().add(const AuthorizationEvent.logout());
+                },
+                child: Container(
+                  child: Assets.icons.logout.svg(),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 26),
           BlocBuilder<TransactionsCubit, TransactionsState>(
