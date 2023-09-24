@@ -11,7 +11,18 @@ extension FormatDoubleToPrice on double {
   }
 }
 
-extension GetColorTransactionType on TransactionType {
+extension ParseTransactionType on TransactionType {
+  String parseType() {
+    switch (this) {
+      case TransactionType.income:
+        return 'Пополнение';
+      case TransactionType.expense:
+        return 'Перевод';
+      case TransactionType.withdraw:
+        return 'Снятие';
+    }
+  }
+
   Color getColor() {
     switch (this) {
       case TransactionType.income:
@@ -22,22 +33,7 @@ extension GetColorTransactionType on TransactionType {
         return Colors.amber;
     }
   }
-}
 
-extension GetTitleTransactionType on TransactionType {
-  String getTitle() {
-    switch (this) {
-      case TransactionType.income:
-        return 'Пополнение через банкомат';
-      case TransactionType.expense:
-        return 'Перевод по номеру карты';
-      case TransactionType.withdraw:
-        return 'Снятие наличных';
-    }
-  }
-}
-
-extension GetIconTransactionType on TransactionType {
   SvgPicture getIcon() {
     switch (this) {
       case TransactionType.income:
@@ -64,6 +60,17 @@ extension GetIconTransactionType on TransactionType {
             BlendMode.srcIn,
           ),
         );
+    }
+  }
+
+  String getTitle() {
+    switch (this) {
+      case TransactionType.income:
+        return 'Пополнение через банкомат';
+      case TransactionType.expense:
+        return 'Перевод по номеру карты';
+      case TransactionType.withdraw:
+        return 'Снятие наличных';
     }
   }
 }

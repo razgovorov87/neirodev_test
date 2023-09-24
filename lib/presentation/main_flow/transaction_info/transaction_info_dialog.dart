@@ -123,8 +123,6 @@ class _InfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double total = transaction.sum + transaction.fee;
-
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
@@ -146,11 +144,19 @@ class _InfoWidget extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                total.getPrice(decimalDigits: 2),
+                transaction.sum.getPrice(decimalDigits: 2),
                 style: const TextStyle(
                   fontSize: 24,
                   height: 28 / 24,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                'Коммисия ${transaction.fee.getPrice(decimalDigits: 2)}',
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  height: 14 / 12,
                 ),
               ),
               const SizedBox(height: 12),

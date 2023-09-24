@@ -41,7 +41,7 @@ class _HomeScreenBodyState extends State<HomeScreenBody> {
               final List<Transaction> list = state.transactions;
               double total = 0;
               for (final Transaction i in list) {
-                total += i.sum + i.fee;
+                total += i.type == TransactionType.income ? i.sum + i.fee : i.sum - i.fee;
               }
               return _TotalAmount(total: total);
             },

@@ -7,6 +7,7 @@ import 'package:sticky_headers/sticky_headers.dart';
 
 import '../../../../domain/bloc/get_transactions_map_cubit/transactions_map_cubit.dart';
 import '../../../../domain/models/transaction/transaction.dart';
+import '../../../design/transaction_type/transaction_type_icon.dart';
 import '../../../extenstions/extentions.dart';
 import '../../../router/router.gr.dart';
 
@@ -88,46 +89,52 @@ class _TransactionList extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: map.length,
-            shrinkWrap: true,
-            controller: scrollController,
-            itemBuilder: (BuildContext context, int keyIndex) {
-              final MapEntry<DateTime, List<Transaction>> currentEntry = map.entries.elementAt(keyIndex);
-              final DateTime date = currentEntry.key;
-              final List<Transaction> transactions =
-                  currentEntry.value.sorted((Transaction a, Transaction b) => b.createdAt.compareTo(a.createdAt));
-
-              return StickyHeader(
-                controller: scrollController,
-                header: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.only(top: 6),
-                  decoration: const BoxDecoration(color: Colors.white),
-                  height: 32,
-                  child: Text(
-                    _getDate(date),
-                    style: const TextStyle(
-                      fontSize: 17,
-                      height: 22 / 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                content: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: transactions.length,
+          child: map.isNotEmpty
+              ? ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: map.length,
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (BuildContext context, int index) => _TransactionItem(
-                    transaction: transactions[index],
-                  ),
-                  separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 6),
+                  controller: scrollController,
+                  itemBuilder: (BuildContext context, int keyIndex) {
+                    final MapEntry<DateTime, List<Transaction>> currentEntry = map.entries.elementAt(keyIndex);
+                    final DateTime date = currentEntry.key;
+                    final List<Transaction> transactions =
+                        currentEntry.value.sorted((Transaction a, Transaction b) => b.createdAt.compareTo(a.createdAt));
+
+                    return StickyHeader(
+                      controller: scrollController,
+                      header: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(top: 6),
+                        decoration: const BoxDecoration(color: Colors.white),
+                        height: 32,
+                        child: Text(
+                          _getDate(date),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            height: 22 / 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      content: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        itemCount: transactions.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) => _TransactionItem(
+                          transaction: transactions[index],
+                        ),
+                        separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 6),
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  padding: const EdgeInsets.only(top: 16),
+                  alignment: Alignment.topCenter,
+                  child: const Text('Нет операций'),
                 ),
-              );
-            },
-          ),
         ),
         const SizedBox(height: 12),
       ],
@@ -156,17 +163,7 @@ class _TransactionItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: transaction.type.getColor().withOpacity(0.15),
-              ),
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-              height: 40,
-              width: 40,
-              child: transaction.type.getIcon(),
-            ),
+            TransactionTypeIcon(transactionType: transaction.type),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -196,7 +193,7 @@ class _TransactionItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  (transaction.sum + transaction.fee).getPrice(decimalDigits: 2),
+                  transaction.sum.getPrice(decimalDigits: 2),
                   style: const TextStyle(
                     fontSize: 15,
                     height: 20 / 15,
